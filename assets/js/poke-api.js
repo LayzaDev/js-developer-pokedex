@@ -1,35 +1,47 @@
+const pokeApi = {}; // objeto vazio que será usado para armazenar as funções relacionadas à API Pokémon
 
-const pokeApi = {}
-
+// responsável por converter os detalhes da API Pokémon em um objeto Pokémon personalizado
 function convertPokeApiDetailToPokemon(pokeDetail) {
-    const pokemon = new Pokemon()
-    pokemon.number = pokeDetail.id
-    pokemon.name = pokeDetail.name
+  const pokemon = new Pokemon(); // instancia do objeto Pokemon (pokemon-model.js)
 
-    const types = pokeDetail.types.map((typeSlot) => typeSlot.type.name)
-    const [type] = types
+  // Atribuindo valores com base nos detalhes fornencidos pela API
+  pokemon.number = pokeDetail.id;
+  pokemon.name = pokeDetail.name;
 
-    pokemon.types = types
-    pokemon.type = type
+  const types = pokeDetail.types.map((typeSlot) => typeSlot.type.name);
+  const [type] = types;
 
-    pokemon.photo = pokeDetail.sprites.other.dream_world.front_default
+  pokemon.types = types;
+  pokemon.type = type;
 
-    return pokemon
+  pokemon.photo = pokeDetail.sprites.other.dream_world.front_default;
+
+  // About
+  pokemon.species = pokeDetail.species.name;
+  pokemon.height = pokeDetail.height;
+  pokemon.weight = pokeDetail.weight;
+  pokemon.abilities = pokeDetail.abilities.map((ability) => ability.name);
+
+  // Base Stats (Estatisticas)
+  pokemon.hp = pokemon.stats.map((baseStat) => baseStat);
+  return pokemon; // retorna o objeto Pokemon
 }
 
 pokeApi.getPokemonDetail = (pokemon) => {
-    return fetch(pokemon.url)
-        .then((response) => response.json())
-        .then(convertPokeApiDetailToPokemon)
-}
+  // Recebe um objeto pokemon contendo uma URL
+  return fetch(pokemon.url) // faz a requisição à API Pokemin para obter os detalhes
+    .then((response) => response.json()) // converte a resposta para JSON
+    .then(convertPokeApiDetailToPokemon); // Chama a função para transformar os detalhes em um objeto pokemon
+};
 
 pokeApi.getPokemons = (offset = 0, limit = 5) => {
-    const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
+  // Cria uma URL com base nos parâmetros offset e limit
+  const url = `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`;
 
-    return fetch(url)
-        .then((response) => response.json())
-        .then((jsonBody) => jsonBody.results)
-        .then((pokemons) => pokemons.map(pokeApi.getPokemonDetail))
-        .then((detailRequests) => Promise.all(detailRequests))
-        .then((pokemonsDetails) => pokemonsDetails)
-}
+  return fetch(url) // Faz uma requisição à API Pokémon
+    .then((response) => response.json()) // Converte a resposta JSON para obter a lista de resultados.
+    .then((jsonBody) => jsonBody.results) // Obtem a lista de resultados
+    .then((pokemons) => pokemons.map(pokeApi.getPokemonDetail)) // Mapeia essa lista usando a função getPokemonDetail para obter os detalhes de cada Pokémon.
+    .then((detailRequests) => Promise.all(detailRequests)) // Usa Promise.all para aguardar que todas as requisições detalhadas sejam concluídas.
+    .then((pokemonsDetails) => pokemonsDetails); //Retorna a lista completa de detalhes de Pokémon.
+};
